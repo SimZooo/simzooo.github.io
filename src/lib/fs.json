@@ -1,0 +1,29 @@
+{
+    "metadata": {
+        "users": [
+            { "user": "simen", "home": "/home/simen" }
+        ]
+    },
+    "system": 
+    {
+        "name": "/",
+        "type": "directory",
+        "children": [
+            {
+                "name": "home", 
+                "type": "directory", 
+                "children": 
+                [
+                    {
+                        "name": "simen",
+                        "type": "directory",
+                        "children":
+                        [
+                            { "name": "test.txt", "type": "file", "static_file": "/test.txt" }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
