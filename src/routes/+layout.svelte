@@ -9,6 +9,7 @@
 	<a class="hover:cursor-pointer fancy-link" href="/">Home</a>
 </div>
 <div class="absolute right-15 top-7 text-[#2D3441] flex gap-7">
+	<a class="hover:cursor-pointer fancy-link" href="/projects">Projects</a>
 	<a class="hover:cursor-pointer fancy-link" href="/about">About</a>
 	<a class="hover:cursor-pointer fancy-link" href="/contact" onpointerleave={() => contact_text="Contact"} onpointerenter={() => contact_text="Get in touch!"}>{contact_text}</a>
 </div>
@@ -41,6 +42,11 @@
     .fancy-link:hover::after {
         width: 100%;
     }
+    
+    *::-webkit-scrollbar {
+        display: none;
+    }
+
 </style>
 
 {@render children?.()}
