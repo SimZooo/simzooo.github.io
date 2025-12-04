@@ -23,6 +23,41 @@
                         ]
                     }
                 ]
+            },
+            {
+                "name": "etc", 
+                "type": "directory", 
+                "children": 
+                [
+                ]
+            },
+            {
+                "name": "var", 
+                "type": "directory", 
+                "children": 
+                [
+                ]
+            },
+            {
+                "name": "opt", 
+                "type": "directory", 
+                "children": 
+                [
+                ]
+            },
+            {
+                "name": "root", 
+                "type": "directory", 
+                "children": 
+                [
+                ]
+            },
+            {
+                "name": "tmp", 
+                "type": "directory", 
+                "children": 
+                [
+                ]
             }
         ]
     }

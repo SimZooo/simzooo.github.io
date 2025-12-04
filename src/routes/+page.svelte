@@ -5,9 +5,11 @@
         list_dir,
         get_home_dir,
         get_file_system,
-        get_dir
+        get_dir,
+        change_dir,
     } from "$lib/fs.js";
     import DOMPurify from "dompurify";
+    import { AfterimageShader } from "three/examples/jsm/Addons.js";
 
     let input = $state("");
     let content = $state([]);
@@ -81,30 +83,58 @@
                 break;
             }
             case "cd": {
-                let file_path = parts[1];
-                if (file_path.startsWith("./")) {
-                    let temp_path = `${curr_dir}/${file_path.slice(2, file_path.length)}`;
-                    file_path = temp_path;
-                } else if (/^[A-Za-z]/.test(file_path.at(0))) {
-                    let temp_path;
-                    if (curr_dir === "/") {
-                        temp_path = `/${file_path}`
-                    } else {
-                        temp_path = `${curr_dir}/${file_path}`;
+                let file_path = parts[1].split("./").join("");
+                let dir = curr_dir;
+                if (file_path.startsWith("/")) {
+                    dir = "";
+                }
+                curr_dir = change_dir(file_path, dir);
+                break;
+            }
+            case "find": {
+                let file_path = parts[1].split("./").join("");
+                let dir = curr_dir;
+                if (file_path.startsWith("/")) {
+                    dir = "";
+                }
+                
+                let args = {};
+
+                for (let i = 2; i < parts.length; i++) {
+                    let arg = parts[i];
+                    if (arg.startsWith("-")) {
+                        let arg_name = arg.split("-").join("");
+                        i += 1;
+                        if (i < parts.length) {
+                            let arg_val = parts[i];
+                            args[arg_name] = arg_val;
+                        }
                     }
-                    file_path = temp_path;
                 }
 
-                let path_exists = get_dir(file_path);
-                console.log(path_exists)
+                let children = get_dir(dir).children;
+                children = children.filter((child) => {
+                    for (const arg_name in args) {
+                        let arg_val = args[arg_name];
+                        switch (arg_name) {
+                            case "name": {
+                                if (child.name !== arg_val) {
+                                    return false;
+                                }
+                                break;
+                            }
+                            case "type": {
+                                if (child.type !== arg_val) {
+                                    return false;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    content.push(child.name)
+                    return true;
+                });
 
-                if (path_exists === undefined) {
-                    break;
-                }
-
-                if (file_path && path_exists != "undefined") {
-                    curr_dir = file_path;
-                }
                 break;
             }
         }
@@ -112,44 +142,61 @@
 </script>
 
 <main class="w-screen h-screen flex justify-center text-[#D8DDE6] items-center">
-    <div class="absolute text-5xl z-10 text-[#2D3441] top-25 typewriter">
-        <h1>&gt; Simen Mathiesen</h1>
-    </div>
-    <div
-        id="terminal"
-        class="absolute w-1/2 h-1/2 grid place-self-center justify-between bg-[#2D3441] rounded-xl grid-rows-[auto_1fr_auto] grid-cols-1"
-    >
-        <div class="w-full h-8 flex justify-end pr-2 pt-2 gap-2">
-            <div class="w-3 h-3 bg-[#61C553] rounded-full"></div>
-            <div class="w-3 h-3 bg-[#F2BF52] rounded-full"></div>
-            <div class="w-3 h-3 bg-[#EC6A60] rounded-full"></div>
+    <div class="w-full h-full flex flex-col items-center mt-60 gap-15">
+        <div class="text-5xl z-10 text-[#2D3441] typewriter w-fit">
+            <h1>&gt; Simen Mathiesen</h1>
+        </div>
+        <div class="text-xl z-10 text-[#2D3441] top-55">
+            <a href="https://certs.ine.com/d9504fbe-4b34-49e4-a21d-3e593db72640" class="hover:underline" target="_blank">Certified Ethical Hacker</a>
         </div>
         <div
-            class="w-full flex-1 rounded-xl flex flex-col pr-4 pl-4 overflow-y-auto min-h-0"
-            bind:this={terminal_element}
+            id="terminal"
+            class="hidden sm:grid w-1/2 h-1/2 place-self-center bg-[#2D3441] rounded-xl grid-rows-[auto_1fr_auto] grid-cols-1"
         >
-            <!-- Enumerate all content -->
-            {#each content as c}
-                <div class="">
-                    <pre>{c}</pre>
+            <div class="w-full h-8 pr-2 pt-2 relative">
+                <!-- Centered title -->
+                <h1 class="absolute left-1/2 -translate-x-1/2">CTF</h1>
+
+                <!-- Right-side traffic lights -->
+                <div class="absolute right-2 top-2 flex gap-2">
+                    <div class="w-3 h-3 bg-[#61C553] rounded-full"></div>
+                    <div class="w-3 h-3 bg-[#F2BF52] rounded-full"></div>
+                    <div class="w-3 h-3 bg-[#EC6A60] rounded-full"></div>
                 </div>
-            {/each}
-        </div>
-        <div
-            type="text"
-            name=""
-            id="prompt"
-            class="rounded-b-xl p-4 focus:outline-none flex items-center"
-        >
-            <p class="text-[#03D1F6]">{curr_dir}</p>
-            <p>&nbsp;$&nbsp;</p>
-            {@html input}
-            <span class="cursor bg-[#D8DDE6] h-[90%]">&nbsp;</span>
+            </div>
+            <div
+                class="w-full flex-1 rounded-xl flex flex-col pr-4 pl-4 overflow-y-auto min-h-0"
+                bind:this={terminal_element}
+            >
+                <!-- Enumerate all content -->
+                {#each content as c}
+                    <div class="">
+                        <pre>{c}</pre>
+                    </div>
+                {/each}
+            </div>
+            <div
+                type="text"
+                name=""
+                id="prompt"
+                class="rounded-b-xl p-4 focus:outline-none flex items-center"
+            >
+                <p class="text-[#03D1F6]">{curr_dir}</p>
+                <p>&nbsp;$&nbsp;</p>
+                {@html input}
+                <span class="cursor bg-[#D8DDE6] h-[90%]">&nbsp;</span>
+            </div>
         </div>
     </div>
 </main>
 
 <style>
+    * {
+        font-family: "JetBrains Mono";
+    }
+    main {
+        overflow: hidden;
+    }
     #terminal {
         color: #d8dde6;
         font-weight: 500;

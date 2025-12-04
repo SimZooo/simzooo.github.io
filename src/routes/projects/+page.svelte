@@ -1,76 +1,69 @@
 <script>
+    import projects from "$lib/projects.json" with { type: "json" };
+    
     let colors = {
         "bash": "#4EAA25",
         "css": "#264DE4",
         "html": "#E34C26",
         "javascript": "#F0DB4F",
+        "typescript": "#3178C6",
         "svelte": "#FF3E00",
-        "rust": "#DEA584"
+        "rust": "#DEA584",
+        "python": "#3572A5"
     };
 
-    let show_example = {index: 0, state: false};
-    
-    let projects = [
-        {
-            title: "netlens",
-            description: "A network visualization site for monitoring and analyzing low-level network traffic in real-time. Some technologies used include Svelte for the frontend and Rust for the backend packet capturing and processing. Features include dynamic graphs, detailed packet information, and customizable views. The networking was done using the low-level <strong>pnet</strong> library in Rust, with a <strong>HTTP</strong> server built using <strong>Actix-web</strong> to serve the frontend and provide real-time data via <strong>WebSockets</strong>.",
-            link: "https://github.com/SimZooo/netlens",
-            languages: [
-                { name: "Svelte", amount: 55 },
-                { name: "Rust", amount: 30 },
-                { name: "JavaScript", amount: 5 },
-                { name: "HTML", amount: 5 },
-                { name: "CSS", amount: 5 },
-            ]
-        },
-        {
-            title: "netlens-tui",
-            description: "A terminal user interface (TUI) for netlens, allowing users to monitor network traffic directly from the command line, with detailed information of low-level networking. Written in Rust. Integrates with my netlens-suite toolchain of penetration testing tools.",
-            link: "https://github.com/SimZooo/netlens-suite/tree/main/tools/netlens-tui",
-            languages: [{ name: "Rust", amount: 100 }]
-        },
-        {
-            title: "nlnetwork",
-            description: "A host-identification tool written in Rust, designed to discover devices on a network. Part of my netlens-suite toolchain of penetration testing tools.",
-            link: "https://github.com/SimZooo/netlens-suite/tree/main/tools/nlnetwork",
-            languages: [{ name: "Rust", amount: 100 }]
-        },
-        {
-            title: "nlscan",
-            description: "A port scanner tool written in Rust, designed to quickly identify open ports on target systems. Part of my netlens-suite toolchain of penetration testing tools.",
-            link: "https://github.com/SimZooo/netlens-suite/tree/main/tools/nlscan",
-            languages: [{ name: "Rust", amount: 100 }]
-        },
-        {
-            title: "nltrace",
-            description: "A network traffic packet sniffer written in Rust, designed to capture and analyze network packets in real-time. Part of my netlens-suite toolchain of penetration testing tools.",
-            link: "https://github.com/SimZooo/netlens-suite/tree/main/tools/nltrace",
-            languages: [{ name: "Rust", amount: 100 }]
-        },
-        {
-            title: "maclookup",
-            description: "A MAC address lookup tool written in Rust, designed to identify device manufacturers based on their MAC addresses.",
-            link: "https://github.com/SimZooo/maclookup",
-            languages: [{ name: "Rust", amount: 100 }]
-        },
-        {
-            title: "noted",
-            description: "A CLI flashcard bash script, designed to help users create, manage, and review flashcards directly from the command line.",
-            link: "https://github.com/SimZooo/noted",
-            languages: [{ name: "Bash", amount: 100 }]
-        },
-    ];
+
+    function short(text, n = 250) {
+        if (text.length <= n) return text;
+        return text.slice(0, n) + "…";
+    }
+
+    function get_next_image(project) {
+        return (project.curr_img > project.images ? project.curr_img + 1 : 1);
+    }
+
+    function get_prev_image(project) {
+        return (project.curr_img <= 1 ? 1 : project.curr_img - 1);
+    }
 </script>
 
-<main class="w-screen h-screen mt-15 p-5">
+<main class="w-full h-full mt-20">
     <div class="w-1/2 mx-auto">
         {#each projects as project, i}
             <div class="mb-6">
                 <div class="flex gap-1">
                     <p class="text-2xl font-semibold">{project.title}</p>
-                    <a class="text-xs mt-3 hover:underline" href={project.link} target="_blank" rel="noopener noreferrer">(link)</a>
+                    {#if project.link !== "none"}
+                        <a class="text-xs mt-3 hover:underline" href={project.link} target="_blank" rel="noopener noreferrer">(github)</a>
+                    {/if}
                 </div>
-                <p class="text-gray-700 mt-2">{@html project.description}</p>
+                <!--<p class="text-gray-700 mt-2">{@html project.description}</p>-->
+                {#if !project.more}
+                    <!--
+                        <div class="relative w-full h-110 place-items-center flex justify-center">
+                            <img src="./examples/{project.title}/{project.curr_img}.png" class="absolute rounded w-180 z-10" alt="example image of {project.title}">
+                            <img src="./examples/{project.title}/{get_prev_image(project)}.png" class="left-30 absolute rounded w-120 z-1 blur-xs" alt="example image of {project.title}">
+                            <img src="./examples/{project.title}/{get_next_image(project)}.png" class="right-30 absolute rounded w-120 z-1 blur-xs" alt="example image of {project.title}">
+                        </div>
+                    -->
+                    {#if project.description !== "none"}
+                    <p class="text-gray-700 mt-2">{@html short(project.description, 220)}</p>
+                    {/if}
+                {:else}
+                    {#if project.description !== "none"}
+                    <p class="text-gray-700 mt-2">{@html project.description}</p>
+                    {/if}
+                {/if}
+                {#if project.description !== "none"}
+                    <button class="flex gap-1 font-bold hover:cursor-pointer" onclick={() => project.more = !project.more}>
+                        {#if project.more}
+                            <p class="">less</p>
+                        {:else}
+                            <p class="">more</p>
+                        {/if}
+                        <p style="transform: rotate({project.more ? "270" : "90"}deg); transition: 0.25s;">&gt;</p>
+                    </button>
+                {/if}
                 <div class="flex mt-1 w-60 h-2">
                     {#each project.languages as lang}
                         <div class="w-4 h-full" style="background-color: {colors[lang.name.toLowerCase()]}; width: {lang.amount}%"></div>
